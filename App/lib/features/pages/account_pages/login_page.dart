@@ -1,7 +1,7 @@
+import 'package:cap_1/features/pages/services/auth_services.dart';
 import 'package:flutter/material.dart';
 import 'package:cap_1/components/my_textfield.dart';
-import 'package:cap_1/service/http_Service.dart';
-import 'package:cap_1/pages/register_page.dart';
+import 'package:cap_1/features/pages/account_pages/register_page.dart';
 
 class LoginPage extends StatefulWidget {
   LoginPage({super.key});
@@ -15,6 +15,7 @@ class _LoginPageState extends State<LoginPage> {
   final TextEditingController emailController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
+  final AuthService authService = AuthService();
 
   @override
   void dispose() {
@@ -22,6 +23,13 @@ class _LoginPageState extends State<LoginPage> {
     emailController.dispose();
     passwordController.dispose();
     super.dispose();
+  }
+
+  void loginUser() {
+    authService.loginUser(
+        email: emailController.text,
+        password: passwordController.text,
+        context: context);
   }
 
   @override
@@ -113,11 +121,7 @@ class _LoginPageState extends State<LoginPage> {
               ElevatedButton(
                 onPressed: () async {
                   if (_formKey.currentState!.validate()) {
-                    String email = emailController.text;
-                    String password = passwordController.text;
-                    print('Sign In button pressed');
-                    print('Email: $email, Password: $password');
-                    await HttpService.login(email, password, context);
+                    loginUser();
                   }
                 },
                 child: Text(

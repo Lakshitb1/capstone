@@ -37,7 +37,7 @@ def register():
     user.set_password(password)
     user.save()
 
-    return jsonify({"status": "success", "message": "User registered successfully"}), 201
+    return jsonify({"status": "success", "message": "User registered successfully!! Login With the same credentials"}), 201
 
 @app.route("/login", methods=["POST"])
 def login():
@@ -55,7 +55,7 @@ def login():
     except DoesNotExist:
         return jsonify({"status": "error", "message": "Invalid email or password"}), 400
 
-    return jsonify({"status": "success", "message": "Login successful"}), 200
+    return jsonify({"status": "success", "message": "Login successful"}), 201
 
 if __name__ == "__main__":
     app.run(debug=True, port=5001)

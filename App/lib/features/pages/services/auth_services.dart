@@ -1,4 +1,93 @@
 import 'dart:convert';
+
+import 'package:cap_1/common/service/error_handling.dart';
+import 'package:cap_1/common/widgets/dashboard_screen.dart';
+import 'package:cap_1/common/widgets/snackbar.dart';
+import 'package:cap_1/models/user.dart';
+import 'package:cap_1/providers/user_provider.dart';
+import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:provider/provider.dart';
+
+class AuthService {
+  void register({
+    required BuildContext context,
+    required String email,
+    required String password,
+    required String username,
+  }) async {
+    try {
+      User user = User(
+        id: '',
+        username: username,
+        email: email,
+        password: password,
+        address: '',
+      );
+      http.Response res = await http.post(
+        Uri.parse('http://10.0.2.2:5001/register'),
+        body: user.toJson(),
+        headers: <String, String>{
+          'Content-Type': 'application/json; charset=UTF-8',
+        },
+      );
+      httpErrorHandle(
+          response: res,
+          context: context,
+          onSuccess: () {
+            showSnackBar(
+              context,
+              jsonDecode(res.body)['message'],
+            );
+          });
+    } catch (e) {
+      showSnackBar(context, e.toString());
+    }
+  }
+
+  void loginUser(
+      {required String email,
+      required String password,
+      required BuildContext context}) async {
+    try {
+      http.Response res = await http.post(
+        Uri.parse('http://10.0.2.2:5001/login'),
+        body: jsonEncode(
+          {
+            'email': email,
+            'password': password,
+          },
+        ),
+        headers: <String, String>{
+          'Content-Type': 'application/json; charset=UTF-8'
+        },
+      );
+      httpErrorHandle(
+          response: res,
+          context: context,
+          onSuccess: () async {
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(
+                builder: (context) => const BottomBar(),
+              ),
+            );
+
+            SharedPreferences pref = await SharedPreferences.getInstance();
+            print("pref is stored");
+            Provider.of<UserProvider>(context, listen: false).setUser(res.body);
+            print("user provider is updated");
+            await pref.setBool('isLoggedIn', true);
+          });
+    } catch (e) {
+      showSnackBar(context, e.toString());
+    }
+  }
+}
+
+
+/*import 'dart:convert';
 import 'package:cap_1/common/widgets/dashboard_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
@@ -74,3 +163,4 @@ class HttpService {
     }
   }
 }
+*/

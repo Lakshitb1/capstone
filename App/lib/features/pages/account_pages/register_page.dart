@@ -1,5 +1,5 @@
 import 'package:cap_1/components/my_textfield.dart';
-import 'package:cap_1/service/http_Service.dart';
+import 'package:cap_1/features/pages/services/auth_services.dart';
 import 'package:flutter/material.dart';
 
 class RegisterScreen extends StatefulWidget {
@@ -12,6 +12,23 @@ class _RegisterScreenState extends State<RegisterScreen> {
   final TextEditingController emailController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
+  final AuthService authService = AuthService();
+  @override
+  void dispose() {
+    super.dispose();
+    emailController.dispose();
+    usernameController.dispose();
+    passwordController.dispose();
+  }
+
+  void registerUser() {
+    authService.register(
+      username: usernameController.text,
+      context: context,
+      email: emailController.text,
+      password: passwordController.text,
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -85,17 +102,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       InkWell(
                         onTap: () async {
                           if (_formKey.currentState!.validate()) {
-                            String username = usernameController.text;
-                            String email = emailController.text;
-                            String pass = passwordController.text;
-                            print('Register button pressed');
-                            print('Username: $username, Password: $pass');
-                            await HttpService.register(
-                              username,
-                              email,
-                              pass,
-                              context,
-                            );
+                            registerUser();
                           }
                         },
                         child: Container(

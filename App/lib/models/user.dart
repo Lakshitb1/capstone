@@ -2,14 +2,14 @@ import 'dart:convert';
 
 class User {
   final String id;
-  final String name;
+  final String username;
   final String email;
   final String password;
   final String address;
 
   User({
     required this.id,
-    required this.name,
+    required this.username,
     required this.email,
     required this.password,
     required this.address,
@@ -18,7 +18,7 @@ class User {
   Map<String, dynamic> toMap() {
     return {
       'id': id,
-      'name': name,
+      'username': username,
       'email': email,
       'password': password,
       'address': address,
@@ -28,7 +28,7 @@ class User {
   factory User.fromMap(Map<String, dynamic> map) {
     return User(
       id: map['_id'] ?? '',
-      name: map['name'] ?? '',
+      username: map['username'] ?? '',
       email: map['email'] ?? '',
       password: map['password'] ?? '',
       address: map['address'] ?? '',
@@ -41,14 +41,14 @@ class User {
 
   User copyWith({
     String? id,
-    String? name,
+    String? username,
     String? email,
     String? password,
     String? address,
   }) {
     return User(
       id: id ?? this.id,
-      name: name ?? this.name,
+      username: username ?? this.username,
       email: email ?? this.email,
       password: password ?? this.password,
       address: address ?? this.address,
