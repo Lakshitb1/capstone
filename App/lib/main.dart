@@ -1,3 +1,4 @@
+import 'package:cap_1/common/widgets/dashboard_screen.dart';
 import 'package:flutter/material.dart';
 import 'pages/login_page.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';

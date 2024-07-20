@@ -1,58 +1,61 @@
-from flask import Flask,request,jsonify
-from flask_sqlalchemy import SQLAlchemy
+from flask import Flask, request, jsonify
+from mongoengine import connect, DoesNotExist
+from models import User
+import logging
 
 app = Flask(__name__)
-app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://postgres:root@localhost:5432/flask_authentication'
-db = SQLAlchemy(app)
 
-# this class is for creating tables in db
-class user(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    username = db.Column(db.String(80))
-    email = db.Column(db.String(120))
-    password = db.Column(db.String(80))
+try:
+    connect(
+        db='capstone',
+        host='mongodb+srv://bhansalilakshit838:u6bR2xonL7TLqAgM@capstone.2hiypvs.mongodb.net/capstone?retryWrites=true&w=majority&appName=capstone',
+        tls=True,
+        tlsAllowInvalidCertificates=True  # Add this line to bypass SSL verification temporarily
+    )
+    logging.info("Successfully connected to MongoDB")
+except Exception as e:
+    logging.error("Error connecting to MongoDB: %s", e)
+    raise
 
-@app.route("/login",methods=["GET", "POST"])
-def login():
-    d = {}
-    if request.method == "POST":
-        uname = request.form["uname"]
-        passw = request.form["passw"]
-        
-        login = user.query.filter_by(username=uname, password=passw).first()
-
-        if login is not None:
-            # account found
-            d["status"] = 'Login Successfully'
-            return jsonify(d)
-        else:
-            # account not exist
-            d["status"] = 'Username or Password is incorrect'
-            return jsonify(d)
-            
-
-
-@app.route("/register", methods=["GET", "POST"])
+@app.route("/register", methods=["POST"])
 def register():
-    d = {}
-    if request.method == "POST":
-        uname = request.form['uname']
-        mail = request.form['mail']
-        passw = request.form['passw']
-        username = user.query.filter_by(username=uname).first()
-        if username is None:
-            register = user(username = uname, email = mail, password = passw)
-            db.session.add(register)
-            db.session.commit()
-            d["status"] = 'User is registered succesfully'
-            return jsonify(d)
-        else:
-            # already exist
-            d["status"] = 'Username already exists'
-            return jsonify(d)
-        
+    data = request.get_json()
+    username = data.get('username')
+    email = data.get('email')
+    password = data.get('password')
+
+    if not username or not email or not password:
+        return jsonify({"status": "error", "message": "All fields are required"}), 400
+
+    if User.objects(username=username).first():
+        return jsonify({"status": "error", "message": "Username already exists"}), 400
+
+    if User.objects(email=email).first():
+        return jsonify({"status": "error", "message": "Email already exists"}), 400
+
+    user = User(username=username, email=email)
+    user.set_password(password)
+    user.save()
+
+    return jsonify({"status": "success", "message": "User registered successfully"}), 201
+
+@app.route("/login", methods=["POST"])
+def login():
+    data = request.get_json()
+    email = data.get('email')
+    password = data.get('password')
+
+    if not email or not password:
+        return jsonify({"status": "error", "message": "Email and password are required"}), 400
+
+    try:
+        user = User.objects.get(email=email)
+        if not user.check_password(password):
+            return jsonify({"status": "error", "message": "Invalid email or password"}), 400
+    except DoesNotExist:
+        return jsonify({"status": "error", "message": "Invalid email or password"}), 400
+
+    return jsonify({"status": "success", "message": "Login successful"}), 200
+
 if __name__ == "__main__":
-    with app.app_context():
-        db.create_all()
-    app.run(debug= True)
-    
+    app.run(debug=True, port=5001)

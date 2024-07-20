@@ -4,21 +4,23 @@ class MyTextField extends StatelessWidget {
   final TextEditingController controller;
   final String hintText;
   final bool obscureText;
-  final void Function(String)? onChanged; // Add this parameter
+  final void Function(String)? onChanged;
+  final String? Function(String?)? validator; 
 
   const MyTextField({
     super.key,
     required this.controller,
     required this.hintText,
     required this.obscureText,
-    this.onChanged, // Make it optional
+    this.onChanged,
+    this.validator, // Make it optional
   });
 
   @override
   Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 25.0),
-      child: TextField(
+      child: TextFormField(
         controller: controller,
         obscureText: obscureText,
         decoration: InputDecoration(
@@ -33,7 +35,8 @@ class MyTextField extends StatelessWidget {
           hintText: hintText,
           hintStyle: TextStyle(color: Colors.grey[500]),
         ),
-        onChanged: onChanged, // Use the callback if provided
+        onChanged: onChanged,
+        validator: validator, 
       ),
     );
   }
