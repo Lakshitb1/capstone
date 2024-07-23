@@ -36,7 +36,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:cap_1/providers/user_provider.dart';
-import 'features/pages/account_pages/login_page.dart';
+import 'features/authentication/account_pages/login_page.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 
 

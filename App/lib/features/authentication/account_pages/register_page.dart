@@ -1,5 +1,5 @@
 import 'package:cap_1/components/my_textfield.dart';
-import 'package:cap_1/features/pages/services/auth_services.dart';
+import 'package:cap_1/features/authentication/services/auth_services.dart';
 import 'package:flutter/material.dart';
 
 class RegisterScreen extends StatefulWidget {
