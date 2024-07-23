@@ -1,8 +1,8 @@
 import 'package:cap_1/components/buttons.dart';
 import 'package:cap_1/components/slider_items.dart';
+import 'package:cap_1/features/google_map/google_map_screen.dart';
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -12,6 +12,15 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
+  void _navigateToMapScreen() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => const MapScreen(),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -56,12 +65,18 @@ class _HomeScreenState extends State<HomeScreen> {
           const SizedBox(
             height: 30,
           ),
-          CustomButton(text: 'Start Monitoring'),
+          CustomButton(
+            text: 'Start Monitoring',
+            onPressed: _navigateToMapScreen,
+          ),
           const SizedBox(
             height: 30,
           ),
-          CustomButton(text: 'View History'),
-          Spacer(),
+          CustomButton(
+            text: 'View History',
+            onPressed: () {},
+          ),
+          const Spacer(),
         ]),
       ),
     );
