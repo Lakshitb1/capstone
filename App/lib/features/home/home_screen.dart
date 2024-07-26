@@ -1,6 +1,6 @@
 import 'package:cap_1/components/buttons.dart';
 import 'package:cap_1/components/slider_items.dart';
-import 'package:cap_1/features/google_map/google_map_screen.dart';
+import 'package:cap_1/features/google_map/map_screen/google_map_screen.dart';
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:flutter/material.dart';
 
