@@ -1,5 +1,4 @@
 import 'dart:convert';
-
 import 'package:cap_1/common/service/error_handling.dart';
 import 'package:cap_1/common/widgets/dashboard_screen.dart';
 import 'package:cap_1/common/widgets/snackbar.dart';
@@ -23,6 +22,7 @@ class AuthService {
         username: username,
         email: email,
         password: password,
+        token: '',
         address: '',
       );
       http.Response res = await http.post(
@@ -33,59 +33,89 @@ class AuthService {
         },
       );
       httpErrorHandle(
-          response: res,
-          context: context,
-          onSuccess: () {
-            showSnackBar(
-              context,
-              jsonDecode(res.body)['message'],
-            );
-          });
+        response: res,
+        context: context,
+        onSuccess: () {
+          showSnackBar(
+            context,
+            jsonDecode(res.body)['message'],
+          );
+        },
+      );
     } catch (e) {
       showSnackBar(context, e.toString());
     }
   }
 
-  void loginUser(
-      {required String email,
-      required String password,
-      required BuildContext context}) async {
+  void loginUser({
+    required String email,
+    required String password,
+    required BuildContext context,
+  }) async {
     try {
       http.Response res = await http.post(
         Uri.parse('http://10.0.2.2:5001/login'),
-        body: jsonEncode(
-          {
-            'email': email,
-            'password': password,
-          },
-        ),
+        body: jsonEncode({
+          'email': email,
+          'password': password,
+        }),
         headers: <String, String>{
           'Content-Type': 'application/json; charset=UTF-8'
         },
       );
       httpErrorHandle(
-          response: res,
-          context: context,
-          onSuccess: () async {
-            Navigator.pushReplacement(
-              context,
-              MaterialPageRoute(
-                builder: (context) => const BottomBar(),
-              ),
-            );
+        response: res,
+        context: context,
+        onSuccess: () async {
+          SharedPreferences pref = await SharedPreferences.getInstance();
+          Provider.of<UserProvider>(context, listen: false).setUser(res.body);
+          await pref.setString('x-auth-token', jsonDecode(res.body)['token']);
+          
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(
+              builder: (context) => const BottomBar(),
+            ),
+          );
+        },
+      );
+    } catch (e) {
+      showSnackBar(context, e.toString());
+    }
+  }
 
-            SharedPreferences pref = await SharedPreferences.getInstance();
-            print("pref is stored");
-            Provider.of<UserProvider>(context, listen: false).setUser(res.body);
-            print("user provider is updated");
-            await pref.setBool('isLoggedIn', true);
-          });
+  void getUserData(BuildContext context) async {
+    try {
+      SharedPreferences prefs = await SharedPreferences.getInstance();
+      String? token = prefs.getString('x-auth-token');
+      if (token == null) {
+        prefs.setString('x-auth-token', '');
+        token = '';
+      }
+      var tokenRes = await http.post(
+        Uri.parse('http://10.0.2.2:5001/tokenIsValid'),
+        headers: <String, String>{
+          'Content-Type': 'application/json; charset=UTF-8',
+          'x-auth-token': token,
+        },
+      );
+      var response = jsonDecode(tokenRes.body);
+      if (response == true) {
+        http.Response userRes = await http.get(
+          Uri.parse('http://10.0.2.2:5001/getUserData'),
+          headers: <String, String>{
+            'Content-Type': 'application/json; charset=UTF-8',
+            'x-auth-token': token,
+          },
+        );
+        var userProvider = Provider.of<UserProvider>(context, listen: false);
+        userProvider.setUser(userRes.body);
+      }
     } catch (e) {
       showSnackBar(context, e.toString());
     }
   }
 }
-
 
 /*import 'dart:convert';
 import 'package:cap_1/common/widgets/dashboard_screen.dart';

@@ -86,7 +86,7 @@ class _MapPageState extends State<MapScreen> {
       destLocation = null;
       address = "";
     });
-   
+
     if (_controller != null) {
       _controller.animateCamera(
         CameraUpdate.newLatLng(const LatLng(28.6139, 77.2090)),
@@ -136,14 +136,95 @@ class _MapPageState extends State<MapScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.black,
       appBar: AppBar(
         title: const Text('Map Center Screen'),
         centerTitle: true,
       ),
       body: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          const SizedBox(height: 20),
+          // Map Container
+
+          Expanded(
+            child: Container(
+              margin: const EdgeInsets.all(16.0),
+              decoration: BoxDecoration(
+                border: Border.all(color: Colors.blue, width: 2.0),
+                borderRadius: BorderRadius.circular(8.0),
+              ),
+              child: _isMapStarted
+                  ? GoogleMap(
+                      onMapCreated: _onMapCreated,
+                      initialCameraPosition: const CameraPosition(
+                        target: LatLng(28.6139, 77.2090),
+                        zoom: 10,
+                      ),
+                      markers: _createMarkers(),
+                    )
+                  : const Center(
+                      child: Text(
+                        'Map is stopped.',
+                        style: TextStyle(color: Colors.white),
+                      ),
+                    ),
+            ),
+          ),
+          const SizedBox(height: 8),
+          Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(16.0),
+                  margin: const EdgeInsets.all(16.0),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(10.0),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.grey.withOpacity(0.5),
+                        spreadRadius: 3,
+                        blurRadius: 3,
+                        offset: const Offset(0, 3),
+                      ),
+                    ],
+                    border: Border.all(color: Colors.blueAccent),
+                  ),
+                  child: Text(
+                    '0.0 m/s',
+                    style: TextStyle(
+                      fontSize: 28,
+                    ),
+                  ),
+                ),
+                Container(
+                  child: Text(
+                    '0.0 m/s',
+                    style: TextStyle(
+                      fontSize: 28,
+                    ),
+                  ),
+                  padding: const EdgeInsets.all(16.0),
+                  margin: const EdgeInsets.all(16.0),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(10.0),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.grey.withOpacity(0.5),
+                        spreadRadius: 3,
+                        blurRadius: 3,
+                        offset: const Offset(0, 3),
+                      ),
+                    ],
+                    border: Border.all(color: Colors.blueAccent),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 8),
           Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
@@ -192,78 +273,6 @@ class _MapPageState extends State<MapScreen> {
               const SizedBox(height: 20),
               CustomButton(text: 'Stop Execution', onPressed: _stopMap),
             ],
-          ),
-          const SizedBox(height: 20),
-          Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Column(
-              children: [
-                Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                    children: [
-                      Container(
-                        padding: const EdgeInsets.all(16.0),
-                        margin: const EdgeInsets.all(16.0),
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(10.0),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.grey.withOpacity(0.5),
-                              spreadRadius: 3,
-                              blurRadius: 3,
-                              offset: const Offset(0, 3),
-                            ),
-                          ],
-                          border: Border.all(color: Colors.blueAccent),
-                        ),
-                      ),
-                      Container(
-                        padding: const EdgeInsets.all(16.0),
-                        margin: const EdgeInsets.all(16.0),
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(10.0),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.grey.withOpacity(0.5),
-                              spreadRadius: 3,
-                              blurRadius: 3,
-                              offset: const Offset(0, 3),
-                            ),
-                          ],
-                          border: Border.all(color: Colors.blueAccent),
-                        ),
-                      ),
-                    ],
-                  ),
-                )
-              ],
-            ),
-          ),
-          Expanded(
-            child: Container(
-              margin: const EdgeInsets.all(16.0),
-              decoration: BoxDecoration(
-                border: Border.all(color: Colors.blue, width: 2.0),
-                borderRadius: BorderRadius.circular(8.0),
-              ),
-              child: _isMapStarted
-                  ? GoogleMap(
-                      onMapCreated: _onMapCreated,
-                      initialCameraPosition: const CameraPosition(
-                        target: LatLng(28.6139,
-                            77.2090), 
-                        zoom: 10,
-                      ),
-                      markers: _createMarkers(),
-                    )
-                  : const Center(
-                      child: Text('Map is stopped.'),
-                    ),
-            ),
           ),
           const SizedBox(height: 20),
         ],

@@ -5,11 +5,13 @@ import 'package:cap_1/common/widgets/snackbar.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 
-void httpErrorHandle({required http.Response response,
+void httpErrorHandle({
+  required http.Response response,
   required BuildContext context,
-  required VoidCallback onSuccess,}){
-    switch (response.statusCode) {
-    case 201:
+  required VoidCallback onSuccess,
+}) {
+  switch (response.statusCode) {
+    case 200:
       onSuccess();
       break;
     case 400:
@@ -21,4 +23,4 @@ void httpErrorHandle({required http.Response response,
     default:
       showSnackBar(context, response.body);
   }
-  }
+}
