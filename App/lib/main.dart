@@ -1,36 +1,4 @@
-//import 'package:cap_1/common/widgets/dashboard_screen.dart';
-/*import 'package:cap_1/providers/user_provider.dart';
-import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
-import 'features/pages/account_pages/login_page.dart';
-import 'package:flutter_easyloading/flutter_easyloading.dart';
 
-void main() {
-  runApp(
-    MultiProvider(
-      providers: [
-        ChangeNotifierProvider(
-          create: (context) => UserProvider(),
-        ),
-      ],
-      child: const MyApp(),
-    ),
-  );
-}
-
-class MyApp extends StatelessWidget {
-  const MyApp({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      debugShowCheckedModeBanner: false,
-      home: LoginPage(),
-      builder: EasyLoading.init(),
-    );
-  }
-}
-*/
 import 'package:cap_1/common/widgets/dashboard_screen.dart';
 import 'package:cap_1/features/authentication/services/auth_services.dart';
 import 'package:flutter/material.dart';
