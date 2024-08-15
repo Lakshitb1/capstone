@@ -70,7 +70,7 @@ class AuthService {
           SharedPreferences pref = await SharedPreferences.getInstance();
           Provider.of<UserProvider>(context, listen: false).setUser(res.body);
           await pref.setString('x-auth-token', jsonDecode(res.body)['token']);
-          
+
           Navigator.pushReplacement(
             context,
             MaterialPageRoute(
@@ -102,7 +102,7 @@ class AuthService {
       var response = jsonDecode(tokenRes.body);
       if (response == true) {
         http.Response userRes = await http.get(
-          Uri.parse('http://10.0.2.2:5001/getUserData'),
+          Uri.parse('http://10.0.2.2:5001/'),
           headers: <String, String>{
             'Content-Type': 'application/json; charset=UTF-8',
             'x-auth-token': token,
@@ -116,4 +116,3 @@ class AuthService {
     }
   }
 }
-

@@ -3,7 +3,7 @@ from mongoengine import connect, DoesNotExist
 from models import User
 import logging
 import jwt
-from middlewares import auth_required  # Import the middleware
+from middlewares import auth_required  
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'passwordKey'  

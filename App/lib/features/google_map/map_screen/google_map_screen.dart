@@ -1,9 +1,10 @@
+// map_screen.dart
+
 import 'package:cap_1/common/widgets/snackbar.dart';
 import 'package:cap_1/components/buttons.dart';
+import 'package:cap_1/features/google_map/services/map_screen_services.dart';
 import 'package:flutter/material.dart';
-import 'package:geocoding/geocoding.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
-import 'package:geolocator/geolocator.dart';
 
 class MapScreen extends StatefulWidget {
   const MapScreen({super.key});
@@ -13,124 +14,45 @@ class MapScreen extends StatefulWidget {
 }
 
 class _MapPageState extends State<MapScreen> {
-  late GoogleMapController _controller;
-  bool _isMapStarted = false;
-  String address = "";
-  late Position currentposition;
-  LatLng? startLocation;
-  LatLng? destLocation;
+  final MapServices _mapServices = MapServices();
   final TextEditingController _latitudeController = TextEditingController();
   final TextEditingController _longitudeController = TextEditingController();
+
+  @override
+  void dispose() {
+    _latitudeController.dispose();
+    _longitudeController.dispose();
+    _mapServices.accelerometerSubscription?.cancel();
+    super.dispose();
+  }
+
   void _onMapCreated(GoogleMapController controller) {
-    _controller = controller;
+    _mapServices.controller = controller;
   }
 
   void _startMap() async {
-    setState(() {
-      _isMapStarted = true;
-
-      startLocation = null;
-      destLocation = null;
-      address = "";
-    });
-    Future<void> _determinePosition() async {
-      bool serviceEnabled;
-      LocationPermission permission;
-      serviceEnabled = await Geolocator.isLocationServiceEnabled();
-      if (!serviceEnabled) {
-        showSnackBar(context, 'Please enable your location service');
-        return;
-      }
-      permission = await Geolocator.checkPermission();
-      if (permission == LocationPermission.denied) {
-        permission = await Geolocator.requestPermission();
-        if (permission == LocationPermission.denied) {
-          showSnackBar(context, 'Location permissions are denied');
-          return;
-        }
-      }
-
-      if (permission == LocationPermission.deniedForever) {
-        showSnackBar(context,
-            'Location permissions are permanently denied, we cannot request permissions.');
-        return;
-      }
-
-      Position position = await Geolocator.getCurrentPosition(
-          desiredAccuracy: LocationAccuracy.high);
-
-      try {
-        List<Placemark> placemarks = await placemarkFromCoordinates(
-            position.latitude, position.longitude);
-        Placemark place = placemarks[0];
-
-        setState(() {
-          startLocation = LatLng(position.latitude, position.longitude);
-          address =
-              "${place.name}, ${place.street}, ${place.locality}, ${place.subAdministrativeArea}, ${place.administrativeArea}, ${place.postalCode}, ${place.country}";
-        });
-
-        _controller.animateCamera(CameraUpdate.newLatLng(startLocation!));
-      } catch (e) {
-        print(e);
-      }
+    try {
+      await _mapServices.startMap();
+      setState(() {});
+    } catch (e) {
+      showSnackBar(context, e.toString());
     }
-
-    await _determinePosition();
   }
 
   void _stopMap() {
-    setState(() {
-      _isMapStarted = false;
-      startLocation = null;
-      destLocation = null;
-      address = "";
-    });
-
-    if (_controller != null) {
-      _controller.animateCamera(
-        CameraUpdate.newLatLng(const LatLng(28.6139, 77.2090)),
-      );
-    }
+    _mapServices.stopMap();
+    setState(() {});
   }
 
   void _setDestination() {
     final double? latitude = double.tryParse(_latitudeController.text);
     final double? longitude = double.tryParse(_longitudeController.text);
-    if (latitude != null && longitude != null) {
-      setState(() {
-        destLocation = LatLng(latitude, longitude);
-      });
-      if (_controller != null) {
-        _controller.animateCamera(CameraUpdate.newLatLng(destLocation!));
-      }
-    } else {
-      showSnackBar(context, 'Please Enter Valid coordinates');
+    try {
+      _mapServices.setDestination(latitude, longitude);
+      setState(() {});
+    } catch (e) {
+      showSnackBar(context, e.toString());
     }
-  }
-
-  Set<Marker> _createMarkers() {
-    final markers = <Marker>{};
-    if (startLocation != null) {
-      markers.add(
-        Marker(
-          markerId: const MarkerId('startLocation'),
-          icon: BitmapDescriptor.defaultMarker,
-          position: startLocation!,
-        ),
-      );
-    }
-    if (destLocation != null) {
-      markers.add(
-        Marker(
-          markerId: const MarkerId('destLocation'),
-          icon: BitmapDescriptor.defaultMarker,
-          position: destLocation!,
-        ),
-      );
-    }
-
-    return markers;
   }
 
   @override
@@ -144,7 +66,6 @@ class _MapPageState extends State<MapScreen> {
       body: Column(
         children: [
           // Map Container
-
           Expanded(
             child: Container(
               margin: const EdgeInsets.all(16.0),
@@ -152,14 +73,14 @@ class _MapPageState extends State<MapScreen> {
                 border: Border.all(color: Colors.blue, width: 2.0),
                 borderRadius: BorderRadius.circular(8.0),
               ),
-              child: _isMapStarted
+              child: _mapServices.startLocation != null
                   ? GoogleMap(
                       onMapCreated: _onMapCreated,
                       initialCameraPosition: const CameraPosition(
                         target: LatLng(28.6139, 77.2090),
                         zoom: 10,
                       ),
-                      markers: _createMarkers(),
+                      markers: _mapServices.createMarkers(),
                     )
                   : const Center(
                       child: Text(
@@ -191,20 +112,16 @@ class _MapPageState extends State<MapScreen> {
                     ],
                     border: Border.all(color: Colors.blueAccent),
                   ),
-                  child: Text(
-                    '0.0 m/s',
-                    style: TextStyle(
-                      fontSize: 28,
-                    ),
-                  ),
+                  child: _mapServices.accelerometerValues.isNotEmpty
+                      ? Text(
+                          'X: ${_mapServices.accelerometerValues[0].x.toStringAsFixed(2)}',
+                          style: const TextStyle(
+                            fontSize: 28,
+                          ),
+                        )
+                      : const Text('0.0'),
                 ),
                 Container(
-                  child: Text(
-                    '0.0 m/s',
-                    style: TextStyle(
-                      fontSize: 28,
-                    ),
-                  ),
                   padding: const EdgeInsets.all(16.0),
                   margin: const EdgeInsets.all(16.0),
                   decoration: BoxDecoration(
@@ -220,6 +137,14 @@ class _MapPageState extends State<MapScreen> {
                     ],
                     border: Border.all(color: Colors.blueAccent),
                   ),
+                  child: _mapServices.accelerometerValues.isNotEmpty
+                      ? Text(
+                          'Y: ${_mapServices.accelerometerValues[0].y.toStringAsFixed(2)}',
+                          style: const TextStyle(
+                            fontSize: 28,
+                          ),
+                        )
+                      : const Text('0.0'),
                 ),
               ],
             ),
@@ -228,7 +153,7 @@ class _MapPageState extends State<MapScreen> {
           Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              address.isEmpty
+              _mapServices.address.isEmpty
                   ? CustomButton(text: 'Start Driving', onPressed: _startMap)
                   : Stack(
                       children: [
@@ -249,7 +174,7 @@ class _MapPageState extends State<MapScreen> {
                             border: Border.all(color: Colors.blueAccent),
                           ),
                           child: Text(
-                            address,
+                            _mapServices.address,
                             style: const TextStyle(
                               fontSize: 16.0,
                               fontWeight: FontWeight.bold,
@@ -261,11 +186,7 @@ class _MapPageState extends State<MapScreen> {
                           bottom: 16,
                           child: IconButton(
                             icon: const Icon(Icons.refresh),
-                            onPressed: () {
-                              setState(() {
-                                _startMap();
-                              });
-                            },
+                            onPressed: _startMap,
                           ),
                         ),
                       ],
@@ -280,3 +201,4 @@ class _MapPageState extends State<MapScreen> {
     );
   }
 }
+
