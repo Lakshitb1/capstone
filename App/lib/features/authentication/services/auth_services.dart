@@ -26,7 +26,7 @@ class AuthService {
         address: '',
       );
       http.Response res = await http.post(
-        Uri.parse('http://10.0.2.2:5001/register'),
+        Uri.parse('http://192.168.1.15:5002/register'),
         body: user.toJson(),
         headers: <String, String>{
           'Content-Type': 'application/json; charset=UTF-8',
@@ -54,7 +54,7 @@ class AuthService {
   }) async {
     try {
       http.Response res = await http.post(
-        Uri.parse('http://10.0.2.2:5001/login'),
+        Uri.parse('http://192.168.1.15:5002/login'),
         body: jsonEncode({
           'email': email,
           'password': password,
@@ -93,7 +93,7 @@ class AuthService {
         token = '';
       }
       var tokenRes = await http.post(
-        Uri.parse('http://10.0.2.2:5001/tokenIsValid'),
+        Uri.parse('http://192.168.1.15:5002/tokenIsValid'),
         headers: <String, String>{
           'Content-Type': 'application/json; charset=UTF-8',
           'x-auth-token': token,
@@ -102,7 +102,7 @@ class AuthService {
       var response = jsonDecode(tokenRes.body);
       if (response == true) {
         http.Response userRes = await http.get(
-          Uri.parse('http://10.0.2.2:5001/'),
+          Uri.parse('http://192.168.1.15:5002/'),
           headers: <String, String>{
             'Content-Type': 'application/json; charset=UTF-8',
             'x-auth-token': token,

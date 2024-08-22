@@ -1,10 +1,10 @@
-// map_screen.dart
-
 import 'package:cap_1/common/widgets/snackbar.dart';
 import 'package:cap_1/components/buttons.dart';
 import 'package:cap_1/features/google_map/services/map_screen_services.dart';
+
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:sensors_plus/sensors_plus.dart';
 
 class MapScreen extends StatefulWidget {
   const MapScreen({super.key});
@@ -17,6 +17,20 @@ class _MapPageState extends State<MapScreen> {
   final MapServices _mapServices = MapServices();
   final TextEditingController _latitudeController = TextEditingController();
   final TextEditingController _longitudeController = TextEditingController();
+
+  @override
+  void initState() {
+    super.initState();
+    
+      _mapServices.accelerometerSubscription =
+        accelerometerEvents.listen((event) {
+      setState(() {
+        _mapServices.accelerometerValues = [event];
+      });
+    });
+     
+    
+  }
 
   @override
   void dispose() {
@@ -90,61 +104,59 @@ class _MapPageState extends State<MapScreen> {
                     ),
             ),
           ),
-          const SizedBox(height: 8),
+          // Accelerometer Data Container
           Padding(
-            padding: const EdgeInsets.all(16.0),
+            padding: const EdgeInsets.only(bottom: 20, left: 16, right: 16),
             child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Container(
-                  padding: const EdgeInsets.all(16.0),
-                  margin: const EdgeInsets.all(16.0),
+                  padding: const EdgeInsets.all(8.0),
                   decoration: BoxDecoration(
                     color: Colors.white,
-                    borderRadius: BorderRadius.circular(10.0),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.grey.withOpacity(0.5),
-                        spreadRadius: 3,
-                        blurRadius: 3,
-                        offset: const Offset(0, 3),
-                      ),
-                    ],
+                    borderRadius: BorderRadius.circular(8.0),
                     border: Border.all(color: Colors.blueAccent),
                   ),
                   child: _mapServices.accelerometerValues.isNotEmpty
                       ? Text(
                           'X: ${_mapServices.accelerometerValues[0].x.toStringAsFixed(2)}',
                           style: const TextStyle(
-                            fontSize: 28,
+                            fontSize: 8,
                           ),
                         )
-                      : const Text('0.0'),
+                      : const Text('X: 0.0'),
                 ),
                 Container(
-                  padding: const EdgeInsets.all(16.0),
-                  margin: const EdgeInsets.all(16.0),
+                  padding: const EdgeInsets.all(8.0),
                   decoration: BoxDecoration(
                     color: Colors.white,
-                    borderRadius: BorderRadius.circular(10.0),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.grey.withOpacity(0.5),
-                        spreadRadius: 3,
-                        blurRadius: 3,
-                        offset: const Offset(0, 3),
-                      ),
-                    ],
+                    borderRadius: BorderRadius.circular(8.0),
+                    border: Border.all(color: Colors.blueAccent),
+                  ),
+                  child: _mapServices.accelerometerValues.isNotEmpty
+                      ? Text(
+                          'Z: ${_mapServices.accelerometerValues[0].x.toStringAsFixed(2)}',
+                          style: const TextStyle(
+                            fontSize: 8,
+                          ),
+                        )
+                      : const Text('Z: 0.0'),
+                ),
+                Container(
+                  padding: const EdgeInsets.all(8.0),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(8.0),
                     border: Border.all(color: Colors.blueAccent),
                   ),
                   child: _mapServices.accelerometerValues.isNotEmpty
                       ? Text(
                           'Y: ${_mapServices.accelerometerValues[0].y.toStringAsFixed(2)}',
                           style: const TextStyle(
-                            fontSize: 28,
+                            fontSize: 8,
                           ),
                         )
-                      : const Text('0.0'),
+                      : const Text('Y: 0.0'),
                 ),
               ],
             ),
@@ -201,4 +213,3 @@ class _MapPageState extends State<MapScreen> {
     );
   }
 }
-
