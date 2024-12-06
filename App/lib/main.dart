@@ -1,4 +1,3 @@
-
 import 'package:cap_1/common/widgets/dashboard_screen.dart';
 import 'package:cap_1/features/authentication/services/auth_services.dart';
 import 'package:flutter/material.dart';

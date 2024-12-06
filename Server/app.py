@@ -1,10 +1,17 @@
 from flask import Flask, request, jsonify, g
 from mongoengine import connect, DoesNotExist
-from models import User
+from models import User, AccelerometerData
 import logging
 import jwt
 from middlewares import auth_required  
-
+import pickle
+import csv
+import numpy as np
+import io
+import pandas as pd
+from sklearn.model_selection import train_test_split
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.metrics import accuracy_score
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'passwordKey'  
 
@@ -13,7 +20,7 @@ try:
         db='capstone',
         host='mongodb+srv://bhansalilakshit838:u6bR2xonL7TLqAgM@capstone.2hiypvs.mongodb.net/capstone?retryWrites=true&w=majority&appName=capstone',
         tls=True,
-        tlsAllowInvalidCertificates=True  # Add this line to bypass SSL verification temporarily
+        tlsAllowInvalidCertificates=True 
     )
     logging.info("Successfully connected to MongoDB")
 except Exception as e:
@@ -93,10 +100,67 @@ def get_user_data():
     try:
         user = g.user
         user_data = user.to_mongo().to_dict()
-        user_data.pop('_id')  # Remove _id from the response
+        user_data.pop('_id') 
         return jsonify({**user_data, "token": g.token})
     except Exception as e:
         return jsonify({'error': str(e)}), 500
+    
+with open('classifier.pkl', 'rb') as model_file:
+    model = pickle.load(model_file)
+
+@app.route('/predict', methods = ['POST'])
+def predict():
+    try:
+        data = request.get_json()
+        x = data['x']
+        y = data['y']
+        z = data['z']
+        input_data = pd.DataFrame([[x,y,z]], columns=['x', 'y', 'z'])
+        prediction = model.predict(input_data)
+        print(prediction[0])
+        return jsonify({'label':prediction[0]})
+    except Exception as e:
+        return jsonify({'error': str(e)}), 400
+    
+@app.route('/upload_csv', methods=['POST'])
+@auth_required(app)
+def upload_csv():
+    try:
+        current_user = g.user
+        data = request.get_json()
+        csv_string = data.get('csv_data')
+
+        if not csv_string:
+            return jsonify({"status": "error", "message": "CSV data is missing"}), 400
+
+        # Parse CSV
+        csv_reader = csv.DictReader(io.StringIO(csv_string))
+        required_fields = {'x', 'y', 'z', 'label'}
+        if not required_fields.issubset(csv_reader.fieldnames):
+            return jsonify({"status": "error", "message": "CSV is missing required columns"}), 400
+
+        # Create records and add references to user
+        records = []
+        for row in csv_reader:
+            reading = AccelerometerData(
+                x=float(row['x']),
+                y=float(row['y']),
+                z=float(row['z']),
+                label=row['label'],
+                user=current_user
+            )
+            reading.save()  # Save individual reading
+            current_user.readings.append(reading)  # Add reference to user
+            records.append(reading)
+
+        current_user.save()  # Save the user document with updated readings
+        return jsonify({"status": "success", "message": "Data uploaded successfully"}), 200
+    except Exception as e:
+        return jsonify({"status": "error", "message": str(e)}), 500
+
+
+
 
 if __name__ == "__main__":
     app.run(host='0.0.0.0', port=5002, debug=True)
+

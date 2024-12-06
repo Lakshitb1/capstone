@@ -7,7 +7,7 @@ class User {
   final String password;
   final String token;
   final String address;
-
+  String prediction;
 
   User({
     required this.id,
@@ -16,6 +16,7 @@ class User {
     required this.password,
     required this.token,
     required this.address,
+    this.prediction = "Unknown", // Default value
   });
 
   Map<String, dynamic> toMap() {
@@ -26,6 +27,7 @@ class User {
       'password': password,
       'token': token,
       'address': address,
+      'prediction': prediction, // Include prediction in map
     };
   }
 
@@ -37,6 +39,7 @@ class User {
       password: map['password'] ?? '',
       token: map['token'] ?? '',
       address: map['address'] ?? '',
+      prediction: map['prediction'] ?? "Unknown", // Initialize prediction
     );
   }
 
@@ -51,6 +54,7 @@ class User {
     String? password,
     String? token,
     String? address,
+    String? prediction, // Add prediction to copyWith
   }) {
     return User(
       id: id ?? this.id,
@@ -59,6 +63,7 @@ class User {
       password: password ?? this.password,
       token: token ?? this.token,
       address: address ?? this.address,
+      prediction: prediction ?? this.prediction, // Update prediction
     );
   }
 }

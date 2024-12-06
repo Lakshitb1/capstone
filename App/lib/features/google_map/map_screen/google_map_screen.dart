@@ -1,7 +1,6 @@
 import 'package:cap_1/common/widgets/snackbar.dart';
 import 'package:cap_1/components/buttons.dart';
 import 'package:cap_1/features/google_map/services/map_screen_services.dart';
-
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:sensors_plus/sensors_plus.dart';
@@ -19,19 +18,7 @@ class _MapPageState extends State<MapScreen> {
   final TextEditingController _longitudeController = TextEditingController();
 
   @override
-  void initState() {
-    super.initState();
-    
-      _mapServices.accelerometerSubscription =
-        accelerometerEvents.listen((event) {
-      setState(() {
-        _mapServices.accelerometerValues = [event];
-      });
-    });
-     
-    
-  }
-
+ 
   @override
   void dispose() {
     _latitudeController.dispose();
@@ -46,7 +33,7 @@ class _MapPageState extends State<MapScreen> {
 
   void _startMap() async {
     try {
-      await _mapServices.startMap();
+      await _mapServices.startMap(context);
       setState(() {});
     } catch (e) {
       showSnackBar(context, e.toString());
@@ -54,7 +41,8 @@ class _MapPageState extends State<MapScreen> {
   }
 
   void _stopMap() {
-    _mapServices.stopMap();
+    _mapServices.prediction = "Unknown";
+    _mapServices.stopMap(context);
     setState(() {});
   }
 
@@ -135,7 +123,7 @@ class _MapPageState extends State<MapScreen> {
                   ),
                   child: _mapServices.accelerometerValues.isNotEmpty
                       ? Text(
-                          'Z: ${_mapServices.accelerometerValues[0].x.toStringAsFixed(2)}',
+                          'Z: ${_mapServices.accelerometerValues[0].z.toStringAsFixed(2)}',
                           style: const TextStyle(
                             fontSize: 8,
                           ),
@@ -205,6 +193,35 @@ class _MapPageState extends State<MapScreen> {
                     ),
               const SizedBox(height: 20),
               CustomButton(text: 'Stop Execution', onPressed: _stopMap),
+              const SizedBox(height: 20),
+              // Prediction Section
+              _mapServices.prediction != "Unknown"
+                  ? Container(
+                      margin: const EdgeInsets.all(16.0),
+                      padding: const EdgeInsets.all(12.0),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(8.0),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.grey.withOpacity(0.5),
+                            spreadRadius: 3,
+                            blurRadius: 3,
+                            offset: const Offset(0, 3),
+                          ),
+                        ],
+                        border: Border.all(color: Colors.blueAccent),
+                      ),
+                      child: Text(
+                        'Prediction: ${_mapServices.prediction}',
+                        style: const TextStyle(
+                          fontSize: 16.0,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.red,
+                        ),
+                      ),
+                    )
+                  : Container(), // Empty container when no prediction is available
             ],
           ),
           const SizedBox(height: 20),

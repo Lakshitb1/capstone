@@ -7,10 +7,12 @@ class UserProvider extends ChangeNotifier {
     username: '',
     email: '',
     password: '',
-    token:'',
+    token: '',
     address: '',
   );
+
   User get user => _user;
+
   void setUser(String user) {
     _user = User.fromJson(user);
     notifyListeners();
@@ -18,6 +20,12 @@ class UserProvider extends ChangeNotifier {
 
   void setUserFromModel(User user) {
     _user = user;
+    notifyListeners();
+  }
+
+  // Add method to update prediction
+  void setPrediction(String prediction) {
+    _user.prediction = prediction;
     notifyListeners();
   }
 }

@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:io';  // Add this for socket exceptions
 import 'package:cap_1/common/service/error_handling.dart';
 import 'package:cap_1/common/widgets/dashboard_screen.dart';
 import 'package:cap_1/common/widgets/snackbar.dart';
@@ -26,22 +27,25 @@ class AuthService {
         address: '',
       );
       http.Response res = await http.post(
-        Uri.parse('http://192.168.1.15:5002/register'),
+        Uri.parse('http://192.168.183.207:5002/register'),  // Ensure this IP is correct and reachable
         body: user.toJson(),
         headers: <String, String>{
           'Content-Type': 'application/json; charset=UTF-8',
         },
       );
+      
       httpErrorHandle(
         response: res,
         context: context,
         onSuccess: () {
           showSnackBar(
             context,
-            jsonDecode(res.body)['message'],
+            jsonDecode(res.body)['message'],  // Extract the message properly
           );
         },
       );
+    } on SocketException catch (e) {
+      showSnackBar(context, 'No Internet connection: $e');
     } catch (e) {
       showSnackBar(context, e.toString());
     }
@@ -54,7 +58,7 @@ class AuthService {
   }) async {
     try {
       http.Response res = await http.post(
-        Uri.parse('http://192.168.1.15:5002/login'),
+        Uri.parse('http://192.168.183.207:5002/login'),  // Ensure this IP is correct and reachable
         body: jsonEncode({
           'email': email,
           'password': password,
@@ -63,6 +67,7 @@ class AuthService {
           'Content-Type': 'application/json; charset=UTF-8'
         },
       );
+      
       httpErrorHandle(
         response: res,
         context: context,
@@ -71,6 +76,7 @@ class AuthService {
           Provider.of<UserProvider>(context, listen: false).setUser(res.body);
           await pref.setString('x-auth-token', jsonDecode(res.body)['token']);
 
+          // Navigate to Dashboard
           Navigator.pushReplacement(
             context,
             MaterialPageRoute(
@@ -79,6 +85,8 @@ class AuthService {
           );
         },
       );
+    } on SocketException catch (e) {
+      showSnackBar(context, 'No Internet connection: $e');
     } catch (e) {
       showSnackBar(context, e.toString());
     }
@@ -92,17 +100,19 @@ class AuthService {
         prefs.setString('x-auth-token', '');
         token = '';
       }
+      
       var tokenRes = await http.post(
-        Uri.parse('http://192.168.1.15:5002/tokenIsValid'),
+        Uri.parse('http://192.168.183.207:5002/tokenIsValid'),  // Ensure this IP is correct and reachable
         headers: <String, String>{
           'Content-Type': 'application/json; charset=UTF-8',
           'x-auth-token': token,
         },
       );
+      
       var response = jsonDecode(tokenRes.body);
       if (response == true) {
         http.Response userRes = await http.get(
-          Uri.parse('http://192.168.1.15:5002/'),
+          Uri.parse('http://192.168.183.207:5002/'),
           headers: <String, String>{
             'Content-Type': 'application/json; charset=UTF-8',
             'x-auth-token': token,
@@ -110,7 +120,11 @@ class AuthService {
         );
         var userProvider = Provider.of<UserProvider>(context, listen: false);
         userProvider.setUser(userRes.body);
+      } else {
+        showSnackBar(context, 'Invalid token');
       }
+    } on SocketException catch (e) {
+      showSnackBar(context, 'No Internet connection: $e');
     } catch (e) {
       showSnackBar(context, e.toString());
     }
