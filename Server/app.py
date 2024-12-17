@@ -12,7 +12,9 @@ import pandas as pd
 from sklearn.model_selection import train_test_split
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.metrics import accuracy_score
+from flask_cors import CORS
 app = Flask(__name__)
+CORS(app)
 app.config['SECRET_KEY'] = 'passwordKey'  
 
 try:
@@ -158,7 +160,6 @@ def upload_csv():
         return jsonify({"status": "success", "message": "Data uploaded successfully"}), 200
     except Exception as e:
         return jsonify({"status": "error", "message": str(e)}), 500
-
 
 from werkzeug.security import check_password_hash
 
