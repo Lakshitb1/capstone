@@ -54,20 +54,24 @@ def register():
 @app.route('/login', methods=['POST'])
 def login():
     data = request.get_json()
+
+    # Ensure that email and password are provided and are strings
     email = data.get('email')
     password = data.get('password')
 
-    if not email or not password:
-        return jsonify({"status": "error", "message": "Email and password are required"}), 400
+    if not email or not isinstance(email, str):
+        return jsonify({"status": "error", "message": "Email is required and must be a string"}), 400
+
+    if not password or not isinstance(password, str):
+        return jsonify({"status": "error", "message": "Password is required and must be a string"}), 400
 
     try:
         user = User.objects.get(email=email)
         if not user.check_password(password):
             return jsonify({"status": "error", "message": "Invalid email or password"}), 400
 
-        # Generate JWT token with expiration time
         token = jwt.encode(
-            {"id": str(user.id)},  # Add expiration if desired
+            {"id": str(user.id)},
             app.config['SECRET_KEY'],
             algorithm="HS256"
         )
@@ -77,6 +81,7 @@ def login():
         return jsonify({"status": "error", "message": "Invalid email or password"}), 400
     except Exception as e:
         return jsonify({"status": "error", "message": str(e)}), 500
+
 
 @app.route('/tokenIsValid', methods=['POST'])
 def token_is_valid():
