@@ -1,5 +1,5 @@
 import 'dart:async';
-import 'package:cap_1/models/user.dart';
+import 'package:cap_1/features/History/screens/history_screen.dart';
 import 'package:cap_1/providers/user_provider.dart';
 import 'package:csv/csv.dart';
 import 'package:flutter/material.dart';
@@ -20,7 +20,7 @@ class MapServices {
   String address = "";
   String prediction = "Unknown";
   List<Map<String, dynamic>> dataRecords = [];
-
+  bool flag = false;
   // Determine the user's current position
   Future<Position> determinePosition() async {
     bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
@@ -46,47 +46,47 @@ class MapServices {
   }
 
   // Start the map and accelerometer tracking
- Future<void> startMap(BuildContext context) async {
-  // Get the user's current location
-  Position position = await determinePosition();
-  List<Placemark> placemarks =
-      await placemarkFromCoordinates(position.latitude, position.longitude);
-  Placemark place = placemarks[0];
-  startLocation = LatLng(position.latitude, position.longitude);
-  address =
-      "${place.name}, ${place.street}, ${place.locality}, ${place.subAdministrativeArea}, ${place.administrativeArea}, ${place.postalCode}, ${place.country}";
+  Future<void> startMap(BuildContext context) async {
+    // Get the user's current location
+    flag = true;
+    Position position = await determinePosition();
+    List<Placemark> placemarks =
+        await placemarkFromCoordinates(position.latitude, position.longitude);
+    Placemark place = placemarks[0];
+    startLocation = LatLng(position.latitude, position.longitude);
+    address =
+        "${place.name}, ${place.street}, ${place.locality}, ${place.subAdministrativeArea}, ${place.administrativeArea}, ${place.postalCode}, ${place.country}";
 
-  // Update map camera
-  if (controller != null) {
-    controller!.animateCamera(CameraUpdate.newLatLng(startLocation!));
+    // Update map camera
+    if (controller != null) {
+      controller!.animateCamera(CameraUpdate.newLatLng(startLocation!));
+    }
+
+    // Store initial accelerometer values
+    List<double>? initialValues;
+
+    accelerometerSubscription = accelerometerEventStream().listen((event) {
+      if (initialValues == null) {
+        // Set initial accelerometer values
+        initialValues = [event.x, event.y, event.z];
+      } else {
+        // Calculate the difference between current and initial values
+        double deltaX = (event.x - initialValues![0]).abs();
+        double deltaY = (event.y - initialValues![1]).abs();
+        double deltaZ = (event.z - initialValues![2]).abs();
+
+        // Check if any difference exceeds 0.5
+        if (deltaX > 0.5 || deltaY > 0.5 || deltaZ > 0.5) {
+          // Update initial values to the current values
+          initialValues = [event.x, event.y, event.z];
+
+          // Call the prediction API
+          flag == true ? sendDataForPrediction(event, context) : flag = false;
+        }
+      }
+    });
   }
 
-  // Store initial accelerometer values
-  List<double>? initialValues;
-
-  accelerometerSubscription = accelerometerEventStream().listen((event) {
-    if (initialValues == null) {
-      // Set initial accelerometer values
-      initialValues = [event.x, event.y, event.z];
-    } else {
-      // Calculate the difference between current and initial values
-      double deltaX = (event.x - initialValues![0]).abs();
-      double deltaY = (event.y - initialValues![1]).abs();
-      double deltaZ = (event.z - initialValues![2]).abs();
-
-      // Check if any difference exceeds 0.5
-      if (deltaX > 0.5 || deltaY > 0.5 || deltaZ > 0.5) {
-        // Update initial values to the current values
-        initialValues = [event.x, event.y, event.z];
-
-        // Call the prediction API
-        sendDataForPrediction(event, context);
-      }
-    }
-  });
-}
-
-  // Send accelerometer data for prediction
   Future<void> sendDataForPrediction(
       AccelerometerEvent event, BuildContext context) async {
     final data = {
@@ -96,7 +96,7 @@ class MapServices {
     };
 
     try {
-      var url = Uri.parse('http://192.168.183.207:5002/predict');
+      var url = Uri.parse('http://192.168.216.207:5002/predict');
       var response = await http.post(
         url,
         headers: {'Content-Type': 'application/json'},
@@ -129,14 +129,16 @@ class MapServices {
 
   // Stop the map and upload accelerometer data as CSV
   void stopMap(BuildContext context) async {
+    flag = false;
     startLocation = null;
     destLocation = null;
     address = "";
     prediction = "Unknown";
 
     accelerometerSubscription?.cancel();
-    accelerometerSubscription = null; 
-    // Stop accelerometer subscription
+    accelerometerSubscription = null;
+
+    // Clear map camera
     if (controller != null) {
       controller!.animateCamera(
         CameraUpdate.newLatLng(
@@ -153,13 +155,21 @@ class MapServices {
               [record['x'], record['y'], record['z'], record['label']]),
         ];
         String csvString = const ListToCsvConverter().convert(csvData);
-        print(csvString);
 
-        // Upload the CSV
+        showDialog(
+          context: context,
+          barrierDismissible: false,
+          builder: (BuildContext dialogContext) {
+            return const Center(
+              child: CircularProgressIndicator(),
+            );
+          },
+        );
+
         String token =
             Provider.of<UserProvider>(context, listen: false).user.token;
 
-        var url = Uri.parse('http://192.168.183.207:5002/upload_csv');
+        var url = Uri.parse('http://192.168.216.207:5002/upload_csv');
         var response = await http.post(
           url,
           headers: <String, String>{
@@ -169,29 +179,31 @@ class MapServices {
           body: json.encode({'csv_data': csvString}),
         );
 
+        Navigator.of(context).pop();
+
         if (response.statusCode == 200) {
           print('CSV uploaded successfully');
-          // Optionally show a success message
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(content: Text("CSV uploaded successfully")),
           );
+
+          Navigator.push(context,
+              MaterialPageRoute(builder: (context) => HistoryScreen()));
         } else {
           print('Error uploading CSV: ${response.body}');
-          // Show error message
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(content: Text("Error uploading CSV: ${response.body}")),
           );
         }
       } catch (e) {
+        Navigator.of(context).pop(); // Close the loading dialog
         print('Error during CSV upload: $e');
-        // Show error message
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text("Error during CSV upload: $e")),
         );
       }
     }
 
-    // Clear stored records
     dataRecords.clear();
   }
 

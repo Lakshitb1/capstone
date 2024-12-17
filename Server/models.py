@@ -1,4 +1,5 @@
-from mongoengine import Document, StringField, ReferenceField, ListField, FloatField
+from datetime import datetime
+from mongoengine import Document, StringField, ReferenceField, ListField, FloatField, DateTimeField
 import bcrypt
 
 class User(Document):
@@ -19,3 +20,4 @@ class AccelerometerData(Document):
     z = FloatField(required=True)  # Change to FloatField
     label = StringField(required=True)
     user = ReferenceField('User', required=True)
+    created_at = DateTimeField(default=datetime.utcnow)
