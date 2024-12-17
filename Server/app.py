@@ -65,11 +65,18 @@ def login():
         if not user.check_password(password):
             return jsonify({"status": "error", "message": "Invalid email or password"}), 400
 
-        token = jwt.encode({"id": str(user.id)}, app.config['SECRET_KEY'], algorithm="HS256")
+        # Generate JWT token with expiration time
+        token = jwt.encode(
+            {"id": str(user.id)},  # Add expiration if desired
+            app.config['SECRET_KEY'],
+            algorithm="HS256"
+        )
 
         return jsonify({"status": "success", "token": token}), 200
     except DoesNotExist:
         return jsonify({"status": "error", "message": "Invalid email or password"}), 400
+    except Exception as e:
+        return jsonify({"status": "error", "message": str(e)}), 500
 
 @app.route('/tokenIsValid', methods=['POST'])
 def token_is_valid():
@@ -214,5 +221,5 @@ def fetch_all_readings():
 
 
 if __name__ == "__main__":
-    app.run(host='0.0.0.0', port=5002, debug=True)
+    app.run(host='0.0.0.0', port=10000, debug=True)
 

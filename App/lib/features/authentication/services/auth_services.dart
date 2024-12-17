@@ -27,7 +27,7 @@ class AuthService {
         address: '',
       );
       http.Response res = await http.post(
-        Uri.parse('http://192.168.216.207:5002/register'),  // Ensure this IP is correct and reachable
+        Uri.parse('https://capstone-1-25k0.onrender.com/register'),  // Updated URL
         body: user.toJson(),
         headers: <String, String>{
           'Content-Type': 'application/json; charset=UTF-8',
@@ -58,7 +58,7 @@ class AuthService {
   }) async {
     try {
       http.Response res = await http.post(
-        Uri.parse('http://192.168.216.207:5002/login'),  // Ensure this IP is correct and reachable
+        Uri.parse('https://capstone-1-25k0.onrender.com/login'),  // Updated URL
         body: jsonEncode({
           'email': email,
           'password': password,
@@ -102,7 +102,7 @@ class AuthService {
       }
       
       var tokenRes = await http.post(
-        Uri.parse('http://192.168.216.207:5002/tokenIsValid'),  // Ensure this IP is correct and reachable
+        Uri.parse('https://capstone-1-25k0.onrender.com/tokenIsValid'),  // Updated URL
         headers: <String, String>{
           'Content-Type': 'application/json; charset=UTF-8',
           'x-auth-token': token,
@@ -112,7 +112,7 @@ class AuthService {
       var response = jsonDecode(tokenRes.body);
       if (response == true) {
         http.Response userRes = await http.get(
-          Uri.parse('http://192.168.216.207:5002/'),
+          Uri.parse('https://capstone-1-25k0.onrender.com/'),  // Updated URL
           headers: <String, String>{
             'Content-Type': 'application/json; charset=UTF-8',
             'x-auth-token': token,
