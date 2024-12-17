@@ -67,6 +67,9 @@ class AuthService {
         'Content-Type': 'application/json; charset=UTF-8',
       },
     );
+    print('Response body: ${res.body}'); // Debugging
+    print('Status code: ${res.statusCode}'); // Debugging
+
 
     // HTTP error handling
     httpErrorHandle(

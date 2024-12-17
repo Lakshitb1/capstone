@@ -54,20 +54,13 @@ def register():
 @app.route('/login', methods=['POST'])
 def login():
     data = request.get_json()
-
-    # Ensure that email and password are provided and are strings
     email = data.get('email')
     password = data.get('password')
-
-    if not email or not isinstance(email, str):
-        return jsonify({"status": "error", "message": "Email is required and must be a string"}), 400
-
-    if not password or not isinstance(password, str):
-        return jsonify({"status": "error", "message": "Password is required and must be a string"}), 400
-
+    print(f"Login request data: {data}")  # Debugging
     try:
         user = User.objects.get(email=email)
         if not user.check_password(password):
+            print("Invalid email or password")
             return jsonify({"status": "error", "message": "Invalid email or password"}), 400
 
         token = jwt.encode(
@@ -75,7 +68,7 @@ def login():
             app.config['SECRET_KEY'],
             algorithm="HS256"
         )
-
+        print(f"Generated token: {token}")  # Debugging
         return jsonify({"status": "success", "token": token}), 200
     except DoesNotExist:
         return jsonify({"status": "error", "message": "Invalid email or password"}), 400
