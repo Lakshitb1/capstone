@@ -1,6 +1,9 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:cap_1/features/History/services/history_services.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:http/http.dart' as http;
 
 class HistoryScreen extends StatefulWidget {
   const HistoryScreen({super.key});
@@ -12,17 +15,52 @@ class HistoryScreen extends StatefulWidget {
 class _HistoryScreenState extends State<HistoryScreen> {
   final HistoryService _historyService = HistoryService();
   bool _showAll = false;
-  
-  final String streamlitURL = "https://bumpanalytics-ticqhl68pu4jxzpxrbaejv.streamlit.app";
-  final String backendAPI = "http://192.168.216.207:5000/get_user_readings";
+
+  final String streamlitURL =
+      "https://bumpanalytics-temcuvxlzp23whlmomt4fc.streamlit.app/";
 
   Future<void> showAnalysis() async {
-    final Uri url = Uri.parse("$streamlitURL?api=$backendAPI");
+  try {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    String? token = prefs.getString('x-auth-token');
 
-    if (!await launchUrl(url, mode: LaunchMode.externalApplication)) {
-      throw 'Could not launch $url';
+    if (token == null || token.isEmpty) {
+      throw Exception('User is not logged in. Auth token is missing.');
     }
+
+    final String backendAPI = 'http://192.168.216.207:5002/fetch_all_readings';
+    print('Backend API URL: $backendAPI');
+
+    // Make a GET request with the token in headers
+    final response = await http.get(
+      Uri.parse(backendAPI),
+      headers: {
+        'x-auth-token': token, // Pass the token in headers
+        'Content-Type': 'application/json',
+      },
+    );
+
+    if (response.statusCode == 200) {
+      print('API Response: ${response.body}');
+
+      // Build final Streamlit URL
+      final Uri url = Uri.parse("$streamlitURL?api=${Uri.encodeComponent(backendAPI)}");
+      print('Launching URL: $url');
+
+      if (!await launchUrl(url, mode: LaunchMode.externalApplication)) {
+        throw Exception('Could not launch URL: $url');
+      }
+    } else {
+      throw Exception(
+          'Failed to fetch all readings. Status code: ${response.statusCode}');
+    }
+  } catch (err) {
+    print('Error: $err');
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text('Error: $err')),
+    );
   }
+}
 
   @override
   Widget build(BuildContext context) {
@@ -104,8 +142,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
                                   "Timestamp: ${item['timestamp'] ?? 'Unknown'}\n"
                                   "X: ${item['x'] ?? 0}, Y: ${item['y'] ?? 0}, Z: ${item['z'] ?? 0}",
                                   style: TextStyle(
-                                      color: Colors.grey.shade700,
-                                      height: 1.4),
+                                      color: Colors.grey.shade700, height: 1.4),
                                 ),
                               ),
                             ),
@@ -137,7 +174,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
                     padding: const EdgeInsets.symmetric(
                         horizontal: 20.0, vertical: 8.0),
                     child: ElevatedButton.icon(
-                      onPressed: () =>showAnalysis,
+                      onPressed: () => showAnalysis(),
                       icon: const Icon(Icons.bar_chart, color: Colors.white),
                       label: const Text(
                         'Detailed Analysis',

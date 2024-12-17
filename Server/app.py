@@ -184,6 +184,32 @@ def get_user_readings():
         return jsonify({"status": "success", "readings": readings_data}), 200
     except Exception as e:
         return jsonify({"status": "error", "message": str(e)}), 500
+    
+
+@app.route('/fetch_all_readings', methods=['GET'])
+def fetch_all_readings():
+    
+    try:
+        # Query all documents in the AccelerometerData collection
+        readings = AccelerometerData.objects()
+
+        # Transform the data into a JSON-friendly format
+        readings_data = [
+            {
+                "x": reading.x,
+                "y": reading.y,
+                "z": reading.z,
+                "label": reading.label,
+                "timestamp": reading.created_at.strftime("%Y-%m-%d %H:%M:%S"),
+                "user_id": str(reading.user.id) if reading.user else None  # Include user ID if linked
+            }
+            for reading in readings
+        ]
+
+        return jsonify({"status": "success", "readings": readings_data}), 200
+    except Exception as e:
+        return jsonify({"status": "error", "message": str(e)}), 500
+
 
 
 if __name__ == "__main__":
