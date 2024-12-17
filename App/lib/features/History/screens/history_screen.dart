@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:cap_1/features/History/services/history_services.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class HistoryScreen extends StatefulWidget {
   const HistoryScreen({super.key});
@@ -11,6 +12,17 @@ class HistoryScreen extends StatefulWidget {
 class _HistoryScreenState extends State<HistoryScreen> {
   final HistoryService _historyService = HistoryService();
   bool _showAll = false;
+  
+  final String streamlitURL = "https://bumpanalytics-ticqhl68pu4jxzpxrbaejv.streamlit.app";
+  final String backendAPI = "http://192.168.216.207:5000/get_user_readings";
+
+  Future<void> showAnalysis() async {
+    final Uri url = Uri.parse("$streamlitURL?api=$backendAPI");
+
+    if (!await launchUrl(url, mode: LaunchMode.externalApplication)) {
+      throw 'Could not launch $url';
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -125,9 +137,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
                     padding: const EdgeInsets.symmetric(
                         horizontal: 20.0, vertical: 8.0),
                     child: ElevatedButton.icon(
-                      onPressed: () {
-                        // Add functionality for Detailed Analysis
-                      },
+                      onPressed: () =>showAnalysis,
                       icon: const Icon(Icons.bar_chart, color: Colors.white),
                       label: const Text(
                         'Detailed Analysis',
