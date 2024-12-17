@@ -18,7 +18,7 @@ class MapServices {
   LatLng? destLocation;
   List<AccelerometerEvent> accelerometerValues = [];
   String address = "";
-  String prediction = "Unknown";
+  String prediction = "Normal";
   List<Map<String, dynamic>> dataRecords = [];
   bool flag = false;
   // Determine the user's current position
@@ -71,17 +71,20 @@ class MapServices {
         initialValues = [event.x, event.y, event.z];
       } else {
         // Calculate the difference between current and initial values
-        double deltaX = (event.x - initialValues![0]).abs();
-        double deltaY = (event.y - initialValues![1]).abs();
-        double deltaZ = (event.z - initialValues![2]).abs();
+        // double deltaX = (event.x - initialValues![0]).abs();
+        // double deltaY = (event.y - initialValues![1]).abs();
+        // double deltaZ = (event.z - initialValues![2]).abs();
 
         // Check if any difference exceeds 0.5
-        if (deltaX > 0.5 || deltaY > 0.5 || deltaZ > 0.5) {
+        //event.x > 2 || event.x < -2 ||
+        if (event.y > 5 || event.y < -5) {
           // Update initial values to the current values
           initialValues = [event.x, event.y, event.z];
 
           // Call the prediction API
           flag == true ? sendDataForPrediction(event, context) : flag = false;
+        } else {
+          prediction = "Normal";
         }
       }
     });
@@ -117,7 +120,6 @@ class MapServices {
             'y': event.y,
             'z': event.z,
             'label': predictedLabel,
-            
           });
         }
       } else {

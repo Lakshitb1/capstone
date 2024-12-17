@@ -4,6 +4,7 @@ import 'package:cap_1/features/google_map/services/map_screen_services.dart';
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:sensors_plus/sensors_plus.dart';
+import 'package:cap_1/common/widgets/dataContainer.dart';
 
 class MapScreen extends StatefulWidget {
   const MapScreen({super.key});
@@ -17,13 +18,19 @@ class _MapPageState extends State<MapScreen> {
   final TextEditingController _latitudeController = TextEditingController();
   final TextEditingController _longitudeController = TextEditingController();
 
+  double xAxis = 0.0;
+  double yAxis = 0.0;
+  double zAxis = 0.0;
+
   @override
- 
+  void initState() {
+    super.initState();
+  }
+
   @override
   void dispose() {
     _latitudeController.dispose();
     _longitudeController.dispose();
-    _mapServices.accelerometerSubscription?.cancel();
     super.dispose();
   }
 
@@ -32,6 +39,13 @@ class _MapPageState extends State<MapScreen> {
   }
 
   void _startMap() async {
+    accelerometerEvents.listen((AccelerometerEvent event) {
+      setState(() {
+        xAxis = event.x;
+        yAxis = event.y;
+        zAxis = event.z;
+      });
+    });
     try {
       await _mapServices.startMap(context);
       setState(() {});
@@ -43,7 +57,9 @@ class _MapPageState extends State<MapScreen> {
   void _stopMap() {
     _mapServices.prediction = "Unknown";
     _mapServices.stopMap(context);
-    setState(() {});
+    setState(() {
+      _mapServices.accelerometerValues.clear();
+    });
   }
 
   void _setDestination() {
@@ -98,54 +114,9 @@ class _MapPageState extends State<MapScreen> {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Container(
-                  padding: const EdgeInsets.all(8.0),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(8.0),
-                    border: Border.all(color: Colors.blueAccent),
-                  ),
-                  child: _mapServices.accelerometerValues.isNotEmpty
-                      ? Text(
-                          'X: ${_mapServices.accelerometerValues[0].x.toStringAsFixed(2)}',
-                          style: const TextStyle(
-                            fontSize: 8,
-                          ),
-                        )
-                      : const Text('X: 0.0'),
-                ),
-                Container(
-                  padding: const EdgeInsets.all(8.0),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(8.0),
-                    border: Border.all(color: Colors.blueAccent),
-                  ),
-                  child: _mapServices.accelerometerValues.isNotEmpty
-                      ? Text(
-                          'Z: ${_mapServices.accelerometerValues[0].z.toStringAsFixed(2)}',
-                          style: const TextStyle(
-                            fontSize: 8,
-                          ),
-                        )
-                      : const Text('Z: 0.0'),
-                ),
-                Container(
-                  padding: const EdgeInsets.all(8.0),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(8.0),
-                    border: Border.all(color: Colors.blueAccent),
-                  ),
-                  child: _mapServices.accelerometerValues.isNotEmpty
-                      ? Text(
-                          'Y: ${_mapServices.accelerometerValues[0].y.toStringAsFixed(2)}',
-                          style: const TextStyle(
-                            fontSize: 8,
-                          ),
-                        )
-                      : const Text('Y: 0.0'),
-                ),
+                buildDataContainer('X', xAxis),
+                buildDataContainer('Y', yAxis),
+                buildDataContainer('Z', zAxis),
               ],
             ),
           ),
