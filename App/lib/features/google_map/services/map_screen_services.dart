@@ -117,6 +117,7 @@ class MapServices {
             'y': event.y,
             'z': event.z,
             'label': predictedLabel,
+            
           });
         }
       } else {

@@ -165,27 +165,25 @@ from werkzeug.security import check_password_hash
 @app.route('/get_user_readings', methods=['GET'])
 @auth_required(app)
 def get_user_readings():
-    auth = request.authorization
-    if not auth or not auth.username or not auth.password:
-        return jsonify({"status": "error", "message": "Username and password required"}), 401
+    try:
+        current_user = g.user  # Authenticated user from the token
 
-    user = User.objects(username=auth.username).first()
-    if not user or not check_password_hash(user.password, auth.password):
-        return jsonify({"status": "error", "message": "Invalid credentials"}), 401
+        # Fetch readings linked to the user
+        readings = AccelerometerData.objects(user=current_user)
+        readings_data = [
+            {
+                "x": reading.x,
+                "y": reading.y,
+                "z": reading.z,
+                "label": reading.label,
+                "timestamp": reading.created_at.strftime("%Y-%m-%d %H:%M:%S"),
+            }
+            for reading in readings
+        ]
 
-    readings = AccelerometerData.objects(user=user)
-    readings_data = [
-        {
-            "x": reading.x,
-            "y": reading.y,
-            "z": reading.z,
-            "label": reading.label,
-            "timestamp": reading.created_at.strftime("%Y-%m-%d %H:%M:%S"),
-        }
-        for reading in readings
-    ]
-
-    return jsonify({"status": "success", "readings": readings_data}), 200
+        return jsonify({"status": "success", "readings": readings_data}), 200
+    except Exception as e:
+        return jsonify({"status": "error", "message": str(e)}), 500
 
 
 if __name__ == "__main__":

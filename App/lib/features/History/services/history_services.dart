@@ -5,42 +5,40 @@ import 'package:shared_preferences/shared_preferences.dart';
 class HistoryService {
   // Fetch user history data
   Future<List<Map<String, dynamic>>> fetchHistoryData() async {
-    try {
-      SharedPreferences prefs = await SharedPreferences.getInstance();
-      String? token = prefs.getString('x-auth-token');
+  try {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    String? token = prefs.getString('x-auth-token');
 
-      if (token == null || token.isEmpty) {
-        throw Exception('User is not logged in.');
-      }
-
-      // Decode token to extract USERNAME
-      String username = getUsernameFromToken(token);
-
-      // Construct the API URL using the username
-      final String apiUrl = 'http://192.168.216.207:5002/get_user_readings?username=$username';
-
-      final response = await http.get(
-        Uri.parse(apiUrl),
-        headers: <String, String>{
-          'Content-Type': 'application/json; charset=UTF-8',
-          'Authorization': 'Bearer $token',  // Correct authorization header
-        },
-      );
-
-      if (response.statusCode == 200) {
-        final Map<String, dynamic> jsonData = json.decode(response.body);
-        if (jsonData['status'] == 'success') {
-          return List<Map<String, dynamic>>.from(jsonData['readings']);
-        } else {
-          throw Exception(jsonData['message'] ?? 'Unknown error occurred.');
-        }
-      } else {
-        throw Exception('Failed to fetch data. Status code: ${response.statusCode}');
-      }
-    } catch (e) {
-      throw Exception('Error fetching history data: $e');
+    if (token == null || token.isEmpty) {
+      throw Exception('User is not logged in.');
     }
+
+    // Decode token or directly retrieve the username/user_id.
+    String username = getUsernameFromToken(token); // Update if required
+
+    final String apiUrl = 'http://192.168.216.207:5002/get_user_readings?username=$username';
+    final response = await http.get(
+      Uri.parse(apiUrl),
+      headers: <String, String>{
+        'Content-Type': 'application/json; charset=UTF-8',
+        'x-auth-token': token, // Add correct authentication header
+      },
+    );
+
+    if (response.statusCode == 200) {
+      final Map<String, dynamic> jsonData = json.decode(response.body);
+      if (jsonData['status'] == 'success') {
+        return List<Map<String, dynamic>>.from(jsonData['readings']);
+      } else {
+        throw Exception(jsonData['message'] ?? 'Unknown error occurred.');
+      }
+    } else {
+      throw Exception('Failed to fetch data. Status code: ${response.statusCode}');
+    }
+  } catch (e) {
+    throw Exception('Error fetching history data: $e');
   }
+}
 
   // Extract username from token
   String getUsernameFromToken(String token) {
