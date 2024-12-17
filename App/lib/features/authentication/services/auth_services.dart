@@ -52,45 +52,57 @@ class AuthService {
   }
 
   void loginUser({
-    required String email,
-    required String password,
-    required BuildContext context,
-  }) async {
-    try {
-      http.Response res = await http.post(
-        Uri.parse('https://capstone-1-25k0.onrender.com/login'),  // Updated URL
-        body: jsonEncode({
-          'email': email,
-          'password': password,
-        }),
-        headers: <String, String>{
-          'Content-Type': 'application/json; charset=UTF-8'
-        },
-      );
-      
-      httpErrorHandle(
-        response: res,
-        context: context,
-        onSuccess: () async {
-          SharedPreferences pref = await SharedPreferences.getInstance();
-          Provider.of<UserProvider>(context, listen: false).setUser(res.body);
-          await pref.setString('x-auth-token', jsonDecode(res.body)['token']);
+  required String email,
+  required String password,
+  required BuildContext context,
+}) async {
+  try {
+    http.Response res = await http.post(
+      Uri.parse('https://capstone-1-25k0.onrender.com/login'),
+      body: jsonEncode({
+        'email': email,
+        'password': password,
+      }),
+      headers: <String, String>{
+        'Content-Type': 'application/json; charset=UTF-8',
+      },
+    );
 
-          // Navigate to Dashboard
-          Navigator.pushReplacement(
-            context,
-            MaterialPageRoute(
-              builder: (context) => const BottomBar(),
-            ),
-          );
-        },
-      );
-    } on SocketException catch (e) {
-      showSnackBar(context, 'No Internet connection: $e');
-    } catch (e) {
-      showSnackBar(context, e.toString());
-    }
+    // HTTP error handling
+    httpErrorHandle(
+      response: res,
+      context: context,
+      onSuccess: () async {
+        final responseBody = jsonDecode(res.body);
+
+        // Validate token existence
+        if (responseBody['token'] == null) {
+          showSnackBar(context, 'Token not found in response');
+          return;
+        }
+
+        SharedPreferences prefs = await SharedPreferences.getInstance();
+        Provider.of<UserProvider>(context, listen: false).setUser(res.body);
+        await prefs.setString('x-auth-token', responseBody['token']);
+
+        if (!context.mounted) return;
+
+        // Navigate to Dashboard
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(
+            builder: (context) => const BottomBar(),
+          ),
+        );
+      },
+    );
+  } on SocketException catch (e) {
+    showSnackBar(context, 'No Internet connection: $e');
+  } catch (e) {
+    showSnackBar(context, 'Unexpected error: $e');
   }
+}
+
 
   void getUserData(BuildContext context) async {
     try {
