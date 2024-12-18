@@ -64,7 +64,7 @@ def login():
             return jsonify({"status": "error", "message": "Invalid email or password"}), 400
 
         token = jwt.encode(
-            {"id": str(user.id)},
+            {"id": str(user._id)},
             app.config['SECRET_KEY'],
             algorithm="HS256"
         )
