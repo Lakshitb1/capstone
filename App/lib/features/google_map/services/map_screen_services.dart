@@ -21,6 +21,7 @@ class MapServices {
   String prediction = "Normal";
   List<Map<String, dynamic>> dataRecords = [];
   bool flag = false;
+  DateTime? lastPredictionTime;
   // Determine the user's current position
   Future<Position> determinePosition() async {
     bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
@@ -70,19 +71,19 @@ class MapServices {
         // Set initial accelerometer values
         initialValues = [event.x, event.y, event.z];
       } else {
-        // Calculate the difference between current and initial values
-        // double deltaX = (event.x - initialValues![0]).abs();
-        // double deltaY = (event.y - initialValues![1]).abs();
-        // double deltaZ = (event.z - initialValues![2]).abs();
-
-        // Check if any difference exceeds 0.5
-        //event.x > 2 || event.x < -2 ||
-        if (event.y > 5 || event.y < -5) {
-          // Update initial values to the current values
+        // Check if any difference exceeds the threshold
+        if (event.y > 5.0 || event.y < -5.0 || event.x<-2 || event.x>2) {
           initialValues = [event.x, event.y, event.z];
 
-          // Call the prediction API
-          flag == true ? sendDataForPrediction(event, context) : flag = false;
+          // Call the prediction API if the time difference is greater than 5 seconds
+          if (flag == true &&
+              (lastPredictionTime == null ||
+                  DateTime.now()
+                      .difference(lastPredictionTime!)
+                      .inSeconds >= 1)) {
+            lastPredictionTime = DateTime.now();
+            sendDataForPrediction(event, context);
+          }
         } else {
           prediction = "Normal";
         }
