@@ -5,7 +5,7 @@ from sklearn.ensemble import RandomForestClassifier
 from sklearn.metrics import accuracy_score
 import pickle
 
-train = pd.read_csv("data.csv")
+train = pd.read_csv("car_test.csv")
 print(train.describe())
 
 X = train.drop('label', axis =1)
