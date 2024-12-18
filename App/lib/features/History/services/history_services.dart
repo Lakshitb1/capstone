@@ -19,7 +19,7 @@ class HistoryService {
     print('Extracted Username: $username');
 
     final String apiUrl =
-        'http://192.168.216.207:5002/get_user_readings?username=';
+        'http://capstone-1-25k0.onrender.com/get_user_readings?username=';
     final response = await http.get(
       Uri.parse(apiUrl),
       headers: <String, String>{

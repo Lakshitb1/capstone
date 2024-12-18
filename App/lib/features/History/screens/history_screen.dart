@@ -28,7 +28,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
       throw Exception('User is not logged in. Auth token is missing.');
     }
 
-    final String backendAPI = 'http://192.168.216.207:5002/fetch_all_readings';
+    final String backendAPI = 'http://capstone-1-25k0.onrender.com/fetch_all_readings';
     print('Backend API URL: $backendAPI');
 
     // Make a GET request with the token in headers
