@@ -2,7 +2,7 @@ import numpy as np
 import pandas as pd
 import random
 
-def simulate_pothole_data(duration=1, freq=50):  # y: [lower limit -5]
+def simulate_bump_data(duration=1, freq=50):  # y: [lower limit -5]
     time = np.linspace(0, duration, int(duration * freq))
     
     # Generate acc_x with values either in [-4, -1.5] or [1.5, 4]
@@ -23,7 +23,7 @@ def simulate_pothole_data(duration=1, freq=50):  # y: [lower limit -5]
     return time, acc_x, acc_y, acc_z
 
 
-def simulate_bump_data(duration=1, freq=50):  # y: [upper limit 5]
+def simulate_pothole_data(duration=1, freq=50):  # y: [upper limit 5]
     time = np.linspace(0, duration, int(duration * freq))
     
     # Generate acc_x with values either in [-4, -1.5] or [1.5, 4]
