@@ -28,13 +28,13 @@ def simulate_bump_data(duration=1, freq=50):  # y: [upper limit 5]
     time = np.linspace(0, duration, int(duration * freq))
     
     # Generate acc_x with values either in [-4, -1.5] or [1.5, 4]
-    range1 = np.random.uniform(-2, -0.25, size=time.shape[0] // 2)
+    range1 = np.random.uniform(-2, -0.5, size=time.shape[0] // 2)
     range2 = np.random.uniform(0.5, 2, size=time.shape[0] - time.shape[0] // 2)
     acc_x = np.concatenate([range1, range2])
     np.random.shuffle(acc_x)  # Shuffle to mix values from both ranges
     
     # Generate acc_y and acc_z
-    acc_y = np.random.uniform(0.5, 2, size=time.shape)
+    acc_y = np.random.uniform(0.25, 2, size=time.shape)
     acc_z = np.random.uniform(-0.05, 0.05, size=time.shape)
     
     # Round values to 6 decimal places
