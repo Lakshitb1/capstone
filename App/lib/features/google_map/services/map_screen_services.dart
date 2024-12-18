@@ -91,6 +91,7 @@ class MapServices {
   }
 
   Future<void> sendDataForPrediction(
+    
       AccelerometerEvent event, BuildContext context) async {
     final data = {
       'x': event.x,
@@ -99,10 +100,12 @@ class MapServices {
     };
 
     try {
-      var url = Uri.parse('http://capstone-1-25k0.onrender.com/predict');
+      String token =
+            Provider.of<UserProvider>(context, listen: false).user.token;
+      var url = Uri.parse('https://capstone-1-25k0.onrender.com/predict');
       var response = await http.post(
         url,
-        headers: {'Content-Type': 'application/json'},
+        headers: {'Content-Type': 'application/json', 'x-auth-token': token,},
         body: json.encode(data),
       );
 
@@ -172,7 +175,7 @@ class MapServices {
         String token =
             Provider.of<UserProvider>(context, listen: false).user.token;
 
-        var url = Uri.parse('http://capstone-1-25k0.onrender.com/upload_csv');
+        var url = Uri.parse('https://capstone-1-25k0.onrender.com/upload_csv');
         var response = await http.post(
           url,
           headers: <String, String>{

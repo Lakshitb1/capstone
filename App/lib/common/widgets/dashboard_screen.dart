@@ -16,16 +16,7 @@ class _BottomBarState extends State<BottomBar> {
   List<Widget> pages = [
     const HomeScreen(),
     const Center(
-      child: Text('Notifications'),
-    ),
-    const Center(
-      child: Text('Search'),
-    ),
-    const Center(
       child: Text('Settings'),
-    ),
-    const Center(
-      child: Text('Profile'),
     ),
   ];
 
@@ -72,52 +63,9 @@ class _BottomBarState extends State<BottomBar> {
                     ),
                   ),
                 ),
-                child: const Icon(Icons.notification_add_rounded),
-              ),
-              label: ''),
-          BottomNavigationBarItem(
-              icon: Container(
-                width: bottomBarWidth,
-                decoration: BoxDecoration(
-                  border: Border(
-                    top: BorderSide(
-                      width: _page == 2 ? bottonBarBorderWidth : 0,
-                      color: _page == 2 ? Colors.blue : Colors.transparent,
-                    ),
-                  ),
-                ),
-                child: const Icon(Icons.search_outlined),
-              ),
-              label: ''),
-          BottomNavigationBarItem(
-              icon: Container(
-                width: bottomBarWidth,
-                decoration: BoxDecoration(
-                  border: Border(
-                    top: BorderSide(
-                      width: _page == 3 ? bottonBarBorderWidth : 0,
-                      color: _page == 3 ? Colors.blue : Colors.transparent,
-                    ),
-                  ),
-                ),
                 child: const Icon(Icons.settings),
               ),
               label: ''),
-          BottomNavigationBarItem(
-            icon: Container(
-              width: bottomBarWidth,
-              decoration: BoxDecoration(
-                border: Border(
-                  top: BorderSide(
-                    width: _page == 4 ? bottonBarBorderWidth : 0,
-                    color: _page == 4 ? Colors.blue : Colors.transparent,
-                  ),
-                ),
-              ),
-              child: const Icon(Icons.circle_rounded),
-            ),
-            label: '',
-          ),
         ],
       ),
     );
