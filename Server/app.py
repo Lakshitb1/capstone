@@ -54,9 +54,14 @@ def register():
 @app.route('/login', methods=['POST'])
 def login():
     data = request.get_json()
+
+    # Ensure that email and password are provided and are strings
     email = data.get('email')
     password = data.get('password')
-    print(f"Login request data: {data}")  # Debugging
+
+    if not email or not password:
+        return jsonify({"status": "error", "message": "Email and password are required"}), 400
+
     try:
         user = User.objects.get(email=email)
         if not user.check_password(password):
@@ -64,7 +69,7 @@ def login():
             return jsonify({"status": "error", "message": "Invalid email or password"}), 400
 
         token = jwt.encode(
-            {"id": str(user._id)},
+            {"id": str(user.id)},  # Add expiration if desired
             app.config['SECRET_KEY'],
             algorithm="HS256"
         )
