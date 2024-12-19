@@ -72,7 +72,7 @@ class MapServices {
         initialValues = [event.x, event.y, event.z];
       } else {
         // Check if any difference exceeds the threshold
-        if (event.y > 0.25 || event.y < -0.25) {
+        if (event.y > 2 || event.y < -2) {
           initialValues = [event.x, event.y, event.z];
 
           // Call the prediction API if the time difference is greater than 5 seconds
@@ -80,7 +80,7 @@ class MapServices {
               (lastPredictionTime == null ||
                   DateTime.now()
                       .difference(lastPredictionTime!)
-                      .inSeconds >= 1)) {
+                      .inSeconds >= 1.0)) {
             lastPredictionTime = DateTime.now();
             sendDataForPrediction(event, context);
           }

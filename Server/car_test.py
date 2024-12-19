@@ -13,7 +13,7 @@ def simulate_pothole_data(duration=1, freq=50):  # y: [lower limit -5]
     np.random.shuffle(acc_x)  # Shuffle to mix values from both ranges
     
     # Generate acc_y and acc_z
-    acc_y = np.random.uniform(-2, -0.25, size=time.shape)
+    acc_y = np.random.uniform(-4, -2, size=time.shape)
     acc_z = np.random.uniform(-0.05, 0.05, size=time.shape)
     
     # Round values to 6 decimal places
@@ -34,7 +34,7 @@ def simulate_bump_data(duration=1, freq=50):  # y: [upper limit 5]
     np.random.shuffle(acc_x)  # Shuffle to mix values from both ranges
     
     # Generate acc_y and acc_z
-    acc_y = np.random.uniform(0.25, 2, size=time.shape)
+    acc_y = np.random.uniform(2, 4, size=time.shape)
     acc_z = np.random.uniform(-0.05, 0.05, size=time.shape)
     
     # Round values to 6 decimal places
